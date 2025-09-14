@@ -319,6 +319,61 @@
             transform: translateY(-3px);
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
+
+        /* Fullscreen Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: auto;
+            height: auto;
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+
+        .modal-content img,
+        .modal-content video {
+            width: auto;
+            height: auto;
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 10px;
+            display: block;
+        }
+
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10000;
+        }
+
+        .close:hover {
+            color: #bbb;
+        }
+
+        .photo-placeholder,
+        .video-placeholder {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -494,6 +549,13 @@
         </footer>
     </div>
 
+    <!-- Fullscreen Modal -->
+    <div id="imageModal" class="modal">
+        <span class="close">&times;</span>
+        <div class="modal-content" id="modalContent">
+        </div>
+    </div>
+
     <script>
         // Add fade-in animation on scroll
         const observerOptions = {
@@ -537,6 +599,56 @@
         // Observe all video elements
         document.querySelectorAll('video').forEach(video => {
             videoObserver.observe(video);
+        });
+
+        // Fullscreen modal functionality
+        const modal = document.getElementById('imageModal');
+        const modalContent = document.getElementById('modalContent');
+        const closeBtn = document.getElementsByClassName('close')[0];
+
+        // Function to open modal with content
+        function openModal(content) {
+            modalContent.innerHTML = content;
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        // Function to close modal
+        function closeModal() {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restore scrolling
+            modalContent.innerHTML = ''; // Clear content
+        }
+
+        // Close modal when clicking the X
+        closeBtn.onclick = closeModal;
+
+        // Close modal when clicking outside the content
+        modal.onclick = function(event) {
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Add click event listeners to all images and videos
+        document.querySelectorAll('.photo-placeholder img, .photo-placeholder video, .video-placeholder video').forEach(element => {
+            element.addEventListener('click', function() {
+                const clone = this.cloneNode(true);
+                if (clone.tagName === 'VIDEO') {
+                    clone.autoplay = true;
+                    clone.loop = true;
+                    clone.muted = true;
+                    clone.controls = true;
+                }
+                openModal(clone.outerHTML);
+            });
         });
     </script>
 </body>
